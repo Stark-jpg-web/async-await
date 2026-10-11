@@ -1,19 +1,22 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const https = require('https');
 
-fs.readFile(`${__dirname}/dog.txt`, 'utf-8', (err, breed) => {
-  if (err) return console.log(err);
-  if (breed) {
-    console.log(breed);
-    fetch(`https://dog.ceo/api/breed/${breed.trim()}/images/random`).then(
-      (res) => {
-        console.log('respons: ',res);
-        console.log('json: ', res.json);
-        res.json().then((data) => {
-          console.log('data: ', data);
-          console.log('image: ', data.message);
-        });
-      }
-    );
+const getDogPic = async () => {
+  try {
+    const breed = await fs.readFile('./dog.txt', 'utf-8');
+    if (breed) {
+      console.log(`breed : ${breed.trim()}`);
+      const res = await fetch(
+        `https://dog.ceo/api/breed/${breed.trim()}/images/random`
+      );
+      const data = await res.json();
+      console.log(`data: `, data);
+      await fs.writeFile(`./dog-img.txt`, data.message);
+      console.log(`image is saved to file`);
+    }
+  } catch (err) {
+    console.log(err);
   }
-});
+};
+
+getDogPic();
